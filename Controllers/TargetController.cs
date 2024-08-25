@@ -2,17 +2,18 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Mossad.Data;
-using Mossad.Modles;
+using Mossad.Models;
+using Mossad.SyetemMap;
 
 namespace Mossad.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class TargetController : ControllerBase
+    public class TargetsController : ControllerBase
     {
         private readonly DBConnect _context;
 
-        public TargetController(DBConnect context)
+        public TargetsController(DBConnect context)
         {
             _context = context;
         }
@@ -21,15 +22,15 @@ namespace Mossad.Controllers
         [HttpGet]
         public async Task<IActionResult> GetTargets()
         {
-            var agents = await _context.Agents.ToArrayAsync();
-            return Ok(agents);
+            var targets = await _context.Targets.ToArrayAsync();
+            return Ok(targets);
         }
 
 
 
         //יצירת מטרה חדשה (לאפשר גישה רק משרת הסימולציה)ץ
         [HttpPost]
-        public async Task<IActionResult> CreateTarget([FromBody] string Name, string position ,string? photo_url)
+        public async Task<IActionResult> CreateTarget([FromBody] string Name, string position, string? photo_url)
         {
             Target target = new Target();
             target.Name = Name;
@@ -44,76 +45,56 @@ namespace Mossad.Controllers
 
         //הגדרת שדות מיקום למטרה (שרת סימולציה בלבד).ץ
         [HttpPut("{id}/pin")]
-        public async Task<ActionResult> SetLocation(Guid id, [FromBody] Location location)
+        public async Task<ActionResult> SetLocation(int id, [FromBody] Location location)
         {
-            var target = await _context.Targets.FindAsync(id);
-            if (target == null)
-            { return NotFound("target not exist"); }
-
-            target.Location = location;
-            return Ok(target);
-
+            try
+            {
+                var target = await _context.Targets.FindAsync(id);
+                target._Location = location;
+                return StatusCode(200, new { Message = $"corrent location of target is: {target._Location} " });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(404, new { Error = "target not exist" });
+            }
         }
+
 
 
 
         //  משמש למיקום ראשוני על המפה ועדכון מטרה שכבר על המפה (שרת סימולציה).ץ 
         [HttpPut("{id}/move")]
-        public async Task<ActionResult> UpdateLocation(Guid id, [FromBody] string direction)
+        public async Task<ActionResult> UpdateLocation(int id, [FromBody] string direction)
         {
             try
             {
-                var target = await _context.Agents.FindAsync(id);
-                if (target.Status = true)
+                var target = await _context.Targets.FindAsync(id);
+
+                if (target.Status != false)
                 {
-                    switch (direction)
+                    bool result = Move.Moved(target._Location, direction, range: 0..1000);
+                    if (result == true)
                     {
-                        //צפון מערב
-                        case "nw":
-                            target.Location.X -= 1;
-                            target.Location.Y -= 1;
-                            break;
-                        //צפון
-                        case "n":
-                            target.Location.Y -= 1;
-                            break;
-                        // צפון מזרח
-                        case "ne":
-                            target.Location.X += 1;
-                            target.Location.Y -= 1;
-                            break;
-                        //מזרח
-                        case "e":
-                            target.Location.X += 1;
-                            break;
-                        // דרום מזרח
-                        case "se":
-                            target.Location.X += 1;
-                            target.Location.Y += 1;
-                            break;
-                        //דרום 
-                        case "s":
-                            target.Location.Y += 1;
-                            break;
-                        // דרום מערב
-                        case "sw":
-                            target.Location.X -= 1;
-                            target.Location.Y += 1;
-                            break;
-                        // מערב
-                        case "w":
-                            target.Location.X -= 1;
-                            break;
+                        return StatusCode(200);
                     }
-                    return Ok($" the location of target is: {target.Location}");
+                    else
+                    {
+                        return StatusCode(401, new { Error = $"Out of range, corrent target location is: {target._Location}" });
+                    }
                 }
-                else { return BadRequest("The target is dead"); }
+                else
+                {
+                    return StatusCode(401, new { Error = "The target is eliminated " });
+                }
             }
             catch (Exception ex)
             {
-                return NotFound("target not exist");
+                return StatusCode(404, new { Error = "target not exist" });
             }
         }
     }
 }
+
+      
+
 

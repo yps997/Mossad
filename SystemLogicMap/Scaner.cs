@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Mossad.Data;
 using Mossad.Interface;
-using Mossad.Modles;
+using Mossad.Models;
 using Mossad.SyetemLogicMap;
 
 namespace Mossad.SyetemArea
