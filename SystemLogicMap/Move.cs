@@ -1,49 +1,67 @@
-﻿using Mossad.Interface;
-using Mossad.Modles;
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.Identity.Client;
+using Mossad.Interface;
+using Mossad.Models;
 namespace Mossad.SyetemMap
 {
     public static class Move
     {
-        public static void Moved(Location location, string direction)
+        public static bool Moved(Location location, string direction, Range range)
         {
+            int x = location.X;
+            int y = location.Y;
+
             switch (direction)
-            {
-                //צפון מערב
+            { 
                 case "nw":
-                    location.X -= 1;
-                    location.Y -= 1;
-                    break;
+                    x -= 1;
+                    y -= 1;
+                    return RangeCheck(location, x, y, range);
                 //צפון
                 case "n":
-                    location.Y -= 1;
-                    break;
+                    y -= 1;
+                    return RangeCheck(location, x, y, range);
                 // צפון מזרח
                 case "ne":
-                    location.X += 1;
-                    location.Y -= 1;
-                    break;
+                    x += 1;
+                    y -= 1;
+                    return RangeCheck(location, x, y, range);
                 //מזרח
                 case "e":
-                    location.X += 1;
-                    break;
+                    x += 1;
+                    return RangeCheck(location, x, y, range);
                 // דרום מזרח
                 case "se":
-                    location.X += 1;
-                    location.Y += 1;
-                    break;
+                    x += 1;
+                    y += 1;
+                    return RangeCheck(location, x, y, range);
                 //דרום 
                 case "s":
-                    location.Y += 1;
-                    break;
+                    y += 1;
+                    return RangeCheck(location, x, y, range);
                 // דרום מערב
                 case "sw":
-                    location.X -= 1;
-                    location.Y += 1;
-                    break;
+                    x -= 1;
+                    y += 1;
+                    return RangeCheck(location, x, y, range);
                 // מערב
                 case "w":
-                    location.X -= 1;
-                    break;
+                    x -= 1;
+                    return RangeCheck(location, x, y, range);
+                default: return false;
+            }
+        }
+        public static bool RangeCheck(Location location,int x, int y, Range range)
+        {
+            if (x >= range.Start.Value && x <= range.End.Value && y >= range.Start.Value && y <= range.End.Value)
+            {
+                location.X = x;
+                location.Y = y;
+                return true;
+            }
+            else
+            {
+                return false;
             }
         }
     }

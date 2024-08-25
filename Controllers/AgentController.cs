@@ -3,19 +3,22 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.EntityFrameworkCore;
 using Mossad.Data;
-using Mossad.Modles;
+using Mossad.Models;
 using System.Linq.Expressions;
+using Mossad.SyetemLogicMap;
+using Mossad.SyetemMap;
+using Microsoft.DotNet.Scaffolding.Shared.Messaging;
 
 namespace Mossad.Controllers
 {
 
     [Route("api/[controller]")]
     [ApiController]
-    public class AgentController : ControllerBase
+    public class AgentsController : ControllerBase
     {
         private readonly DBConnect _context;
 
-        public AgentController(DBConnect context)
+        public AgentsController(DBConnect context)
         {
             _context = context;
         }
@@ -39,85 +42,57 @@ namespace Mossad.Controllers
             agent.Image = photo_url;
             _context.Agents.Add(agent);
             await _context.SaveChangesAsync();
-            return Ok($"Agint {agent.Name} insert to mossad");
+            return Ok($"Agint {agent.Id} insert to mossad");
         }
 
 
 
         //הגדרת שדות מיקום לסוכן (שרת סימולציה בלבד).ץ
         [HttpPut("{id}/pin")]
-        public async Task<ActionResult> SetLocation(Guid id, [FromBody] Location location)
-        {
-            var agent = await _context.Agents.FindAsync(id);
-            if (agent == null)
-            { return NotFound("agent not exist"); }
-
-            agent.Location = location;
-            return Ok(agent);
-
-        }
-
-
-
-        //  משמש למיקום ראשוני על המפה ועדכון סוכן שכבר על המפה (שרת סימולציה).ץ 
-        [HttpPut("{id}/move")]
-        public async Task<ActionResult> UpdateLocation(Guid id, [FromBody] string direction)
+        public async Task<ActionResult> SetLocation(int id, [FromBody] Location location)
         {
             try
             {
                 var agent = await _context.Agents.FindAsync(id);
-                if (agent.Status = false)
-                {
-                    switch (direction)
-                    {
-                        //צפון מערב
-                        case "nw":
-                            agent.Location.X -= 1;
-                            agent.Location.Y -= 1;
-                            break;
-                        //צפון
-                        case "n":
-                            agent.Location.Y -= 1;
-                            break;
-                        // צפון מזרח
-                        case "ne":
-                            agent.Location.X += 1;
-                            agent.Location.Y -= 1;
-                            break;
-                        //מזרח
-                        case "e":
-                            agent.Location.X += 1;
-                            break;
-                        // דרום מזרח
-                        case "se":
-                            agent.Location.X += 1;
-                            agent.Location.Y += 1;
-                            break;
-                        //דרום 
-                        case "s":
-                            agent.Location.Y += 1;
-                            break;
-                        // דרום מערב
-                        case "sw":
-                            agent.Location.X -= 1;
-                            agent.Location.Y += 1;
-                            break;
-                        // מערב
-                        case "w":
-                            agent.Location.X -= 1;
-                            break;
-                    }
-                    return Ok($" the location of agent is: {agent.Location}");
-                }
-                else { return BadRequest("The agent is busy with other tasks"); }
+                agent._Location = location;
+                return StatusCode(200, new { Message = $"corrent location of agent is: {agent._Location} " });
             }
             catch (Exception ex)
             {
-                return NotFound("agent not exist");
+                return StatusCode(404, new { Error = "agent not exist" });
             }
+        }
 
 
+        //  משמש למיקום ראשוני על המפה ועדכון סוכן שכבר על המפה (שרת סימולציה).ץ 
+        [HttpPut("{id}/move")]
+        public async Task<ActionResult> UpdateLocation(int id, [FromBody] string direction)
+        {
+            try
+            {
+                var agent = await _context.Agents.FindAsync(id);
 
+                if (agent.Status != false)
+                {
+                    bool result = Move.Moved(agent._Location, direction, range: 0..1000);
+                    if (result == true)
+                    {
+                        return StatusCode(200);
+                    }
+                    else
+                    {
+                        return StatusCode(401, new { Error = $"Out of range, corrent agent location is: {agent._Location}" });
+                    }
+                }
+                else 
+                {
+                    return StatusCode(401, new { Error = "The agent is busy with other tasks" });
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(404, new { Error = "agent not exist" });
+            }
         }
     }
 }
