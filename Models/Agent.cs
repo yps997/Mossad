@@ -1,7 +1,7 @@
 ﻿using Mossad.Interface;
 using System.ComponentModel.DataAnnotations;
 
-namespace Mossad.Modles
+namespace Mossad.Models
 {
     public class Agent : IEntity<Location>
     {

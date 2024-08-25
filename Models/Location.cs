@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
 
-namespace Mossad.Modles
+namespace Mossad.Models
 {
    public class Location
    {

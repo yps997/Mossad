@@ -1,4 +1,4 @@
-﻿using Mossad.Modles;
+﻿using Mossad.Models;
 using System.Collections.Generic;
 using System.Reflection.Emit;
 using Microsoft.EntityFrameworkCore;
@@ -9,13 +9,14 @@ namespace Mossad.Data
     {
             public DBConnect(DbContextOptions<DBConnect> options) : base(options)
             {
-                //if (Database.EnsureCreated() && Login.Count() == 0)
-                //{ Seed(); }
+                if (Database.EnsureCreated() && Users.Count() == 0)
+                { Seed(); }
             }
 
             public DbSet<Agent> Agents { get; set; }
             public DbSet<Target> Targets { get; set; }
             public DbSet<Mission> Missions { get; set; }
+            public DbSet<User> Users {  get; set; }
 
 
             protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -24,17 +25,15 @@ namespace Mossad.Data
 
                 base.OnModelCreating(modelBuilder);
             }
-            //public void Seed()
-            //{
-            //    LoginObject login = new LoginObject()
-            //    {
-            //        UserName = "admin",
-            //        Password = "1234"
-            //    };
-            //    Login.Add(login);
-            //    SaveChanges();
+            public void Seed()
+            {
+            Users.AddRange(
+             new User { Name = "SimulationServer", Password = "1234" },
+             new User { Name = "MVCServer", Password = "1234" }
+         );
+            SaveChanges();
 
-            //}
-        
+        }
+
     }
 }

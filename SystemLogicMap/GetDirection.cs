@@ -1,6 +1,6 @@
 ﻿
 
-using Mossad.Modles;
+using Mossad.Models;
 
 namespace Mossad.SyetemLogicMap
 {
