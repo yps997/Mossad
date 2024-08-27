@@ -7,16 +7,22 @@ namespace Mossad.Data
 {
     public class DBConnect: DbContext
     {
-            public DBConnect(DbContextOptions<DBConnect> options) : base(options)
+        public DBConnect(DbContextOptions<DBConnect> options) : base(options)
+        {
+            Database.EnsureCreated();
+            
+            if (!Agents.Any())
             {
-                if (Database.EnsureCreated() && Agents.Count() == 0)
-                { Seed(); }
+                Seed();
             }
+        }
+        
 
-            public DbSet<Agent> Agents { get; set; }
-            public DbSet<Target> Targets { get; set; }
-            public DbSet<Mission> Missions { get; set; }
-            public DbSet<User> Users {  get; set; }
+
+        public DbSet<Agent> Agents { get; set; }
+        public DbSet<Target> Targets { get; set; }
+        public DbSet<Mission> Missions { get; set; }
+        public DbSet<User> Users {  get; set; }
 
 
             protected override void OnModelCreating(ModelBuilder modelBuilder)

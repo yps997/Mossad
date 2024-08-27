@@ -5,6 +5,9 @@ namespace Mossad.Models
 {
    public class Location
    {
+        
+        public int Id { get; set; }
+
         [Range(0,1000, ErrorMessage = "x point must be between {0} and {1000}.")]
         public int X { get; set; }
 

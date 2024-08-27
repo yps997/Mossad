@@ -37,11 +37,8 @@ namespace Mossad.Controllers
 
         //יצירת סוכן חדש (לאפשר גישה רק משרת הסימולציה)ץ
         [HttpPost]
-        public async Task<IActionResult> CreateAgents([FromBody] string nickName, string photo_url)
+        public async Task<IActionResult> CreateAgents([FromBody]Agent agent)
         {
-            Agent agent = new Agent();
-            agent.Name = nickName;
-            agent.Image = photo_url;
             _context.Agents.Add(agent);
             await _context.SaveChangesAsync();
             return Ok($"Agint {agent.Id} insert to mossad");

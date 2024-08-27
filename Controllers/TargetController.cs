@@ -39,12 +39,8 @@ namespace Mossad.Controllers
 
         //יצירת מטרה חדשה (לאפשר גישה רק משרת הסימולציה)ץ
         [HttpPost]
-        public async Task<IActionResult> CreateTarget([FromBody] string Name, string position, string? photo_url)
+        public async Task<IActionResult> CreateTarget([FromBody] Target target)
         {
-            Target target = new Target();
-            target.Name = Name;
-            target.Image = photo_url;
-            target.Position = position;
             _context.Targets.Add(target);
             await _context.SaveChangesAsync();
             return Ok($"Target: {target.Id} A target has been added to the target bank");
