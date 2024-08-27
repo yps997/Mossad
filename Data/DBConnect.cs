@@ -9,7 +9,7 @@ namespace Mossad.Data
     {
             public DBConnect(DbContextOptions<DBConnect> options) : base(options)
             {
-                if (Database.EnsureCreated() && Users.Count() == 0)
+                if (Database.EnsureCreated() && Agents.Count() == 0)
                 { Seed(); }
             }
 
@@ -27,13 +27,14 @@ namespace Mossad.Data
             }
             public void Seed()
             {
-            Users.AddRange(
-             new User { Name = "SimulationServer", Password = "1234" },
-             new User { Name = "MVCServer", Password = "1234" }
-         );
-            SaveChanges();
-
-        }
-
+                Agent agent =  new Agent()
+                { 
+                    Name = "Yair",
+                    Image = "qwertyuio",
+                    Status = false
+                };
+                Agents.Add(agent);
+                SaveChanges();
+            }
     }
 }

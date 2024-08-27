@@ -2,7 +2,8 @@
 using Microsoft.Identity.Client;
 using Mossad.Interface;
 using Mossad.Models;
-namespace Mossad.SyetemMap
+
+namespace Mossad.Services.LogicServices
 {
     public static class Move
     {

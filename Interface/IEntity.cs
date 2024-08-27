@@ -1,5 +1,7 @@
 ﻿using Microsoft.CodeAnalysis;
-using Mossad.Modles;
+using Mossad.Models;
+using Mossad.Enum;
+
 namespace Mossad.Interface
 {
     public interface IEntity<Location>

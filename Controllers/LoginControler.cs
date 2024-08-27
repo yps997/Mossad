@@ -18,7 +18,8 @@ namespace Mossad.Controllers
             _context = context;
         }
 
-        public async Task CreateToken()
+        
+        private async Task CreateToken()
         {
             Guid token = new Guid();  
         }

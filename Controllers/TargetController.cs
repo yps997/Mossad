@@ -3,7 +3,16 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Mossad.Data;
 using Mossad.Models;
-using Mossad.SyetemMap;
+using Mossad.Services.LogicServices;
+using Mossad.Enum;
+using Mossad.Services.ControllersServices;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using System.Data.SqlTypes;
+using Mossad.Interface;
+using System.Collections.Generic;
+
+
+
 
 namespace Mossad.Controllers
 {
@@ -51,6 +60,16 @@ namespace Mossad.Controllers
             {
                 var target = await _context.Targets.FindAsync(id);
                 target._Location = location;
+                target.Status = TargetEnum.free;
+
+                Agent[] arrayAgent = EntityServices.ChackMatchig(target, _context, _context.Agents, GetRange.Range(target._Location));
+
+                foreach (Agent agent in arrayAgent)
+                {
+                    await _context.Missions.AddAsync(EntityServices.CreateMission(target, agent));
+                }
+                await _context.SaveChangesAsync();
+               
                 return StatusCode(200, new { Message = $"corrent location of target is: {target._Location} " });
             }
             catch (Exception ex)
@@ -62,25 +81,58 @@ namespace Mossad.Controllers
 
 
 
-        //  משמש למיקום ראשוני על המפה ועדכון מטרה שכבר על המפה (שרת סימולציה).ץ 
+        //  עדכון מיקום מטרה (שרת סימולציה).ץ 
         [HttpPut("{id}/move")]
         public async Task<ActionResult> UpdateLocation(int id, [FromBody] string direction)
         {
             try
             {
-                var target = await _context.Targets.FindAsync(id);
+                Target target = await _context.Targets.FindAsync(id);
 
-                if (target.Status != false)
+                if (target.Status != TargetEnum.eliminated)
                 {
                     bool result = Move.Moved(target._Location, direction, range: 0..1000);
                     if (result == true)
                     {
-                        return StatusCode(200);
+                        Agent[] arrayAgent = EntityServices.ChackMatchig(target, _context, _context.Agents, GetRange.Range(target._Location));
+
+                        List<Mission> newMissions = new List<Mission>();
+
+                        foreach (Agent agent in arrayAgent)
+                        {
+                            newMissions.Add(EntityServices.CreateMission(target, agent));
+                        }
+                        using var transaction = await _context.Database.BeginTransactionAsync();
+                        try
+                        {
+                            // הוספת המשימות החדשות
+                            await _context.Missions.AddRangeAsync(newMissions);
+                            await _context.SaveChangesAsync();
+
+                            // מחיקת משימות 
+                            var missionsToDelete = await _context.Missions
+                                .Where(m => m.Status == MissionsStatus.offer && m.TargetId == id )
+                                            .ToListAsync();
+
+                            _context.Missions.RemoveRange(missionsToDelete);
+                            await _context.SaveChangesAsync();
+
+                            //אישור טרנקזציה
+                            await transaction.CommitAsync();
+                            return StatusCode(200);
+                        }
+                        catch (Exception ex)
+                        {
+                            // שגיאת טרנקזציה
+                            await transaction.RollbackAsync();
+                            return StatusCode(401, new { Error = $"Update mission for target falde" });
+
+                        }
                     }
                     else
                     {
                         return StatusCode(401, new { Error = $"Out of range, corrent target location is: {target._Location}" });
-                    }
+                    }  
                 }
                 else
                 {
@@ -90,7 +142,7 @@ namespace Mossad.Controllers
             catch (Exception ex)
             {
                 return StatusCode(404, new { Error = "target not exist" });
-            }
+            }      
         }
     }
 }

@@ -1,8 +1,7 @@
-﻿
+﻿using Mossad.Models;
 
-using Mossad.Models;
+namespace Mossad.Services.LogicServices
 
-namespace Mossad.SyetemLogicMap
 {
     public static class GetDirection
     {

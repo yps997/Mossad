@@ -12,13 +12,13 @@ namespace Mossad.MiddleWares
                 _next = next;
                 _tokens = tokens;
             }
-        public static void Validate(string token)
-        {
-            if(token in _tokens)
-                {
-                InvokeAsync();
-                }
-        }
+        //public static void Validate(string token)
+        //{
+        //    if(token in _tokens)
+        //        {
+        //        InvokeAsync();
+        //        }
+        //}
             public async Task InvokeAsync(HttpContext context)
             {
                 var reqest = context.Request;
