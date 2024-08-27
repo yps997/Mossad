@@ -65,8 +65,8 @@ namespace Mossad.Controllers
                     await _context.Missions.AddAsync(EntityServices.CreateMission(target, agent));
                 }
                 await _context.SaveChangesAsync();
-               
-                return StatusCode(200, new { Message = $"corrent location of target is: {target._Location} " });
+
+                return StatusCode(200, new { Message = $"corrent location of target is: X= {target._Location.X}, Y= {target._Location.Y} " });
             }
             catch (Exception ex)
             {
@@ -86,13 +86,14 @@ namespace Mossad.Controllers
                 Target target = await _context.Targets.FindAsync(id);
 
                 if (target.Status != TargetEnum.eliminated)
-                {
+                {  
+                    Location location = _context.Locations.FirstOrDefault(x => x.Id == target.LocationId);
                     bool result = Move.Moved(target._Location, direction, range: 0..1000);
                     if (result == true)
                     {
                         Agent[] arrayAgent = EntityServices.ChackMatchig(target, _context, _context.Agents, GetRange.Range(target._Location));
-
-                        List<Mission> newMissions = new List<Mission>();
+                        
+                        List<Mission> newMissions = new List<Mission>(); 
 
                         foreach (Agent agent in arrayAgent)
                         {
@@ -127,7 +128,7 @@ namespace Mossad.Controllers
                     }
                     else
                     {
-                        return StatusCode(401, new { Error = $"Out of range, corrent target location is: {target._Location}" });
+                        return StatusCode(401, new { Error = $"corrent location of target is: X=  {target._Location.X}, Y= {target._Location.Y} " });
                     }  
                 }
                 else

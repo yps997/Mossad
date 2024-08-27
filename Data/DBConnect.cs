@@ -11,7 +11,7 @@ namespace Mossad.Data
         {
             Database.EnsureCreated();
             
-            if (!Agents.Any())
+            if (Agents.Any())
             {
                 Seed();
             }
@@ -23,9 +23,10 @@ namespace Mossad.Data
         public DbSet<Target> Targets { get; set; }
         public DbSet<Mission> Missions { get; set; }
         public DbSet<User> Users {  get; set; }
+        public DbSet<Location> Locations { get; set; }
 
 
-            protected override void OnModelCreating(ModelBuilder modelBuilder)
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
             {
                 //Database.EnsureCreated();
 

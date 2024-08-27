@@ -16,6 +16,9 @@ namespace Mossad.Models
         public string Image { get; set; }
 
         public int? BodyCount { get; set; }
+        public int? LocationId { get; set; }
+
+        [ForeignKey("LocationId")]
         public Location? _Location { get; set; }
     }
 }

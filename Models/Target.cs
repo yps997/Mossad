@@ -15,6 +15,9 @@ namespace Mossad.Models
         public TargetEnum? Status { get; set; }
         public string? Image { get; set; }
         public int? ExterminatingAgent { get; set; }
+        public int? LocationId { get; set; }
+
+        [ForeignKey("LocationId")]
         public Location? _Location { get; set; }
 
     }

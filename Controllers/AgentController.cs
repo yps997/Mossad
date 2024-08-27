@@ -10,6 +10,7 @@ using Mossad.Services.LogicServices;
 using Microsoft.DotNet.Scaffolding.Shared.Messaging;
 using Mossad.Services.ControllersServices;
 using Mossad.Enum;
+using System.Text.Json;
 
 namespace Mossad.Controllers
 {
@@ -62,7 +63,7 @@ namespace Mossad.Controllers
                     EntityServices.CreateMission(target, agent);
                 }
                 await _context.SaveChangesAsync();
-                return StatusCode(200, new { Message = $"corrent location of agent is: {agent._Location} " });
+                return StatusCode(200, new { Message = $"corrent location of agent is: X= {agent._Location.X}, Y= {agent._Location.Y} " });
             }
             catch (Exception ex)
             {
@@ -73,18 +74,21 @@ namespace Mossad.Controllers
 
         //  עדכון סוכן שכבר על המפה (שרת סימולציה).ץ 
         [HttpPut("{id}/move")]
-        public async Task<ActionResult> UpdateLocation(int id, [FromBody] string direction)
+        public async Task<ActionResult> UpdateLocation(int id, [FromBody] JsonElement directionElement)
         {
+            string direction = directionElement.GetProperty("direction").GetString();
             try
             {
                 var agent = await _context.Agents.FindAsync(id);
 
-                if (agent.Status != false)
+                if (agent.Status != true)
                 {
-                    bool result = Move.Moved(agent._Location, direction, range: 0..1000);
+                    Location location = _context.Locations.FirstOrDefault(x => x.Id == agent.LocationId);
+                    bool result = Move.Moved(location, direction, range: 0..1000);
                     if (result == true)
                     {
                         Target[] arrayAgent = EntityServices.ChackMatchig(agent, _context, _context.Targets, GetRange.Range(agent._Location));
+
                         List<Mission> newMissions = new List<Mission>();
 
                         foreach (Target target in arrayAgent)
@@ -120,7 +124,7 @@ namespace Mossad.Controllers
                     }
                     else
                     {
-                        return StatusCode(401, new { Error = $"Out of range, corrent agent location is: {agent._Location}" });
+                        return StatusCode(401, new { Error = $"Out of range, corrent agent location is: = {agent._Location.X}, Y= {agent._Location.Y} " });
                     }
                 }
                 else
